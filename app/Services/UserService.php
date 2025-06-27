@@ -25,7 +25,7 @@ class UserService implements UserServiceInterface
                 'user' => Auth::user()
             ]);
         }
-
+ 
         return response()->json(['error' => 'Unauthorized'], 401);
     }
 

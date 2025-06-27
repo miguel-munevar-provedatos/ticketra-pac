@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
             UserService::class
         );
     }
-
+ 
     /**
      * Bootstrap any application services.
      */

@@ -13,7 +13,7 @@ use App\Contracts\UserServiceInterface;
 class UserController extends Controller
 {
     private UserServiceInterface $userService;
-
+ 
     public function __construct(UserServiceInterface $userService)
     {
         $this->userService = $userService;
