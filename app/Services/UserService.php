@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cookie;
 
 class UserService implements UserServiceInterface
 {
@@ -16,23 +18,41 @@ class UserService implements UserServiceInterface
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-
         if (Auth::attempt($credentials)) {
-            $token = $request->user()->createToken('auth_token')->plainTextToken;
+            // return response()->json([
+            //     'user' => Auth::user()
+            // ]);
+
+            $request->session()->regenerate();
+
+            $cookie = Cookie::make(
+                'laravel_session', // Nombre de la cookie (debe coincidir con config/session.php)
+                session()->getId(), // Valor: ID de sesión
+                config('session.lifetime'), // Tiempo de expiración (en minutos)
+                config('session.path'),
+                config('session.domain'),
+                config('session.secure'),
+                config('session.http_only'),
+                false,
+                config('session.same_site')
+            );
 
             return response()->json([
-                'token' => $token,
                 'user' => Auth::user()
-            ]);
+            ])->withCookie($cookie);
         }
- 
         return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Se ha cerrado la sesión']);
+        Auth::guard('web')->logout();
+        return response()->json(['message' => 'Logged out']);
+    }
+
+    public function checkAuth()
+    {
+        return response()->json(['authenticated' => Auth::check()]);
     }
 
     public function register(Request $request)
@@ -57,5 +77,4 @@ class UserService implements UserServiceInterface
         $user = User::find($request->user()->id);
         return response()->json($user);
     }
-
 }
